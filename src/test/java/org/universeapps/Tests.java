@@ -6,6 +6,7 @@ import io.restassured.parsing.Parser;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 
 import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
 import static io.restassured.RestAssured.*;
@@ -38,7 +39,9 @@ public class Tests {
                     .contentType(ContentType.JSON)
                     .body(objectMapper.writeValueAsString(requestBody))
                     .when()
-                    .post(BASE_URL + ENDPOINT);
+                    .post(BASE_URL + ENDPOINT)
+                    .then().log().all()
+                    .extract().response();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -52,15 +55,22 @@ public class Tests {
                 .defaultParser(Parser.JSON)
                 .body("id", matchesPattern("^chatcmpl-[A-Za-z0-9]{29}$"))
                 .body("object", equalTo("chat.completion"))
-                .body("choices[0].message.content", startsWith("I can't provide"))
-                .log().all();
+                .body("choices[0].message.content", startsWith("I can't provide"));
     }
 
     @Test
     public void invalidTokenTest() {
-        executeRequest(RequestBody.withDefault(), "t" + getBearerToken()).then()
+        executeRequest(RequestBody.withDefault(), "t" + getBearerToken())
+                .then()
                 .statusCode(401)
-                .body("message", equalTo("Unauthorized"))
-                .log().all();
+                .body("message", equalTo("Unauthorized"));
+    }
+
+    @Test
+    public void emptyMessageTest() {
+        executeRequest(RequestBody.withDefault().setMessages(new ArrayList<>()))
+                .then()
+                .statusCode(400)
+                .body("message", equalTo("Request failed with status code 400"));
     }
 }

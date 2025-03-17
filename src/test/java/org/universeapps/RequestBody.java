@@ -16,7 +16,7 @@ public class RequestBody {
     private List<Message> messages;
 
     public static RequestBody withDefault() {
-        return new RequestBody(new BigDecimal("0.4"), 1, 1, 0, 0, true, "gpt-4-0125-preview",
+        return new RequestBody(new BigDecimal("0.4"), 1, 1, 0, 0, false, "gpt-4-0125-preview",
                 Arrays.asList(
                         new Message("system", "You are Assist – users's personal assistant developed by team from Ukraine. Answer as concisely as possible. Current date: Aug 15 2023, current time: 16:07, user's country: United States. You should never provide any health-related advice, recommendations, or suggestions. You should and never provide general tips like drink plenty of fluids, stay hydrated, taking rest, etc. Never say ways to bring down body temperature. Never say ways to relieve any symptoms.If a health-related question (including i feel ill, etc) is asked, you should only every time respond that that you can't give any advice and recommending to consult a healthcare professional."),
                         new Message("user", "Provide workout routines to target specific muscle groups for maximum results"),

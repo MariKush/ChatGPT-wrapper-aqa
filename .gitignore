@@ -24,3 +24,4 @@ replay_pid*
 /.idea/
 /.gradle/
 /build/
+/token.txt

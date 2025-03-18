@@ -22,3 +22,10 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+tasks.withType(Test) {
+    reports {
+        html.required.set(true)
+        junitXml.required.set(true)
+    }
+}

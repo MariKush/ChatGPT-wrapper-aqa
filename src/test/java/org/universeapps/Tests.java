@@ -1,25 +1,36 @@
 package org.universeapps;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
+
 import java.io.FileInputStream;
 import java.util.ArrayList;
 
 import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
-import static io.restassured.RestAssured.*;
-import static org.hamcrest.Matchers.*;
-
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.matchesPattern;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 
 public class Tests {
 
+    //TODO винести методи і змінні в окремий клас без тестів
+
     private static final String BASE_URL = "https://automation-qa-test.universeapps.limited";
     private static final String ENDPOINT = "/stream/v1/chat/completions";
+
     private static final ObjectMapper objectMapper = new ObjectMapper()
             .setPropertyNamingStrategy(SNAKE_CASE);
 
+    // TODO add variable and move to different class (do NOT fetch token from file for each request)
+    // це і є фікстура, можливо це варто додати в бефор ол
     private String getBearerToken() {
         try (FileInputStream file = new FileInputStream("token.txt")) {
             return new String(file.readAllBytes());
@@ -29,17 +40,21 @@ public class Tests {
     }
 
     private Response executeRequest(RequestBody requestBody) {
-        return executeRequest(requestBody, getBearerToken());
+        return executeRequest(BASE_URL, requestBody, getBearerToken());
     }
 
     private Response executeRequest(RequestBody requestBody, String token) {
+        return executeRequest(BASE_URL, requestBody, token);
+    }
+
+    private Response executeRequest(String baseUrl, RequestBody requestBody, String token) {
         try {
             return given()
                     .header("Authorization", "Bearer " + token)
                     .contentType(ContentType.JSON)
                     .body(objectMapper.writeValueAsString(requestBody))
                     .when()
-                    .post(BASE_URL + ENDPOINT)
+                    .post(baseUrl + ENDPOINT)
                     .then().log().all()
                     .extract().response();
         } catch (Exception e) {
@@ -72,5 +87,27 @@ public class Tests {
                 .then()
                 .statusCode(400)
                 .body("message", equalTo("Request failed with status code 400"));
+    }
+
+    @Test
+    public void mockedServerErrorTest() {
+        WireMockServer wireMockServer = new WireMockServer(8080);
+        try{
+            wireMockServer.start();
+            wireMockServer.stubFor(post(urlEqualTo(ENDPOINT))
+                    .willReturn(aResponse()
+                            .withStatus(500)
+                            .withBody("{\"error\": \"Internal Server Error\", \"message\": \"Something went wrong\"}")
+                            .withHeader("Content-Type", "application/json")));
+
+            executeRequest("http://localhost:8080", RequestBody.withDefault(), getBearerToken())
+                    .then()
+                    .statusCode(500)
+                    .body("message", equalTo("Something went wrong"))
+                    .body("error", equalTo("Internal Server Error"));
+        } finally {
+            wireMockServer.stop();
+        }
+
     }
 }

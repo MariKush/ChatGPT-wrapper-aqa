@@ -1,5 +1,7 @@
 package org.universeapps;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import io.restassured.http.ContentType;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -16,6 +19,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.matchesPattern;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 
@@ -92,7 +98,7 @@ public class Tests {
     @Test
     public void mockedServerErrorTest() {
         WireMockServer wireMockServer = new WireMockServer(8080);
-        try{
+        try {
             wireMockServer.start();
             wireMockServer.stubFor(post(urlEqualTo(ENDPOINT))
                     .willReturn(aResponse()
@@ -108,6 +114,36 @@ public class Tests {
         } finally {
             wireMockServer.stop();
         }
+    }
+
+    @Test
+    public void positiveStreamingTest() {
+        String response = executeRequest(RequestBody.withDefault().setStream(true))
+                .then()
+                .statusCode(200)
+                .extract().body().asString();
+
+
+        List<JsonNode> jsonList = new ArrayList<>();
+
+        List<String> chunks = response.lines().filter(s -> !s.isBlank()).toList();
+
+        assertThat(chunks.get(chunks.size() - 1), equalTo("data: [DONE]") );
+
+        chunks.forEach(line -> {
+            if (line.startsWith("data: ") && !line.equals("data: [DONE]")) {
+                String jsonPart = line.substring(6);
+                try {
+                    jsonList.add(objectMapper.readTree(jsonPart));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        assertThat(jsonList, hasSize(greaterThan(0)));
 
     }
+
+
 }

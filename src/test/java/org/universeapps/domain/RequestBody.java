@@ -1,4 +1,4 @@
-package org.universeapps;
+package org.universeapps.domain;
 
 import java.math.BigDecimal;
 import java.util.Arrays;

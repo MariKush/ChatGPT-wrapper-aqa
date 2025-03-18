@@ -34,7 +34,7 @@ public class SingleMessageTest {
     }
 
     @Test
-    public void emptyMessageTest() {
+    public void emptyMessagesTest() {
         executeRequest(RequestBody.withDefault().setMessages(new ArrayList<>()))
                 .then()
                 .statusCode(400)

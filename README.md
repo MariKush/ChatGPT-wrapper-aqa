@@ -1,8 +1,9 @@
 # UniverseApps - Test Task for QA Automation
 
-## How to start
+## How to run
 ### Preconditions:
 Add the token.txt file containing the Bearer Token to the root directory.
+
 ![img.png](img.png)
 
 ### Gradlew
@@ -39,3 +40,20 @@ After execution is complete, the report will be moved to the reports folder, and
 ```shell
 open reports/tests/test/index.html
 ```
+
+## Scenarios description
+
+### Single Message Test Cases
+* Verify status code is 200 and response fields for valid request parameters
+* Verify status code is 401 and error message for invalid Bearer Token
+* Verify status code is 400 and error message for empty Messages parameter 
+
+### Mocked Server Test Case
+* Verify status code is 500 and error message for mocked Server
+
+### Stream Test Cases
+* Verify count of chunks bigger than zero
+* Verify that last chunk has finish reason stop
+* Verify that overall content has enough characters
+* Verify that all chunks has the same Id
+

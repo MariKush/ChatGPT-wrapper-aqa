@@ -21,6 +21,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    systemProperty "junit.jupiter.execution.parallel.enabled", "true"
+    systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
 }
 
 tasks.withType(Test) {
@@ -29,3 +31,12 @@ tasks.withType(Test) {
         junitXml.required.set(true)
     }
 }
+
+tasks.withType(Test).configureEach {
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+

@@ -3,6 +3,8 @@ package org.universeapps.tests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.universeapps.domain.RequestBody;
 
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.universeapps.utils.Utils.executeRequest;
 import static org.universeapps.utils.Utils.objectMapper;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class StreamTest {
 
 

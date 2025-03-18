@@ -2,6 +2,8 @@ package org.universeapps.tests;
 
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.universeapps.domain.RequestBody;
 
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.universeapps.utils.Utils.executeRequest;
 import static org.universeapps.utils.Utils.getBearerToken;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class SingleMessageTest {
 
     @Test

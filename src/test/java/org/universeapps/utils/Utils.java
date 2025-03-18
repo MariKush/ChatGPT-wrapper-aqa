@@ -12,21 +12,13 @@ import static io.restassured.RestAssured.given;
 
 public class Utils {
 
-    //TODO винести методи і змінні в окремий клас без тестів
-
     private static final String BASE_URL = "https://automation-qa-test.universeapps.limited";
     private static final String ENDPOINT = "/stream/v1/chat/completions";
 
     public static final ObjectMapper objectMapper = new ObjectMapper().setPropertyNamingStrategy(SNAKE_CASE);
 
-    // TODO add variable and move to different class (do NOT fetch token from file for each request)
-    // це і є фікстура, можливо це варто додати в бефор ол
     public static String getBearerToken() {
-        try (FileInputStream file = new FileInputStream("token.txt")) {
-            return new String(file.readAllBytes());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return TokenProvider.getToken();
     }
 
     public static Response executeRequest(RequestBody requestBody) {
